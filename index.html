@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js');</script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 :root{
   --bg:#05070d; --bg2:#0a0f1c;
@@ -45,7 +45,7 @@ img{max-width:100%;display:block}
 .aurora i:nth-child(2){width:50vmax;height:50vmax;right:0;top:25%;background:radial-gradient(circle,rgba(139,92,246,.3),transparent 60%);animation-duration:32s;animation-delay:-8s}
 .aurora i:nth-child(3){width:45vmax;height:45vmax;left:30%;bottom:-5%;background:radial-gradient(circle,rgba(244,114,182,.16),transparent 60%);animation-duration:38s;animation-delay:-16s}
 @keyframes float{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(6vmax,-4vmax,0) scale(1.1)}100%{transform:translate3d(-5vmax,5vmax,0) scale(.95)}}
-#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.6s ease}
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.6s ease;mix-blend-mode:screen}
 #gl.ready{opacity:1}
 .grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -243,6 +243,33 @@ h3{font-size:1.25rem;letter-spacing:-.02em;line-height:1.25}
 footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);font-size:13.5px}
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
 
+
+/* ---------- living extras ---------- */
+.shimmer{background:linear-gradient(100deg,var(--cyan) 0%,var(--violet) 30%,var(--pink) 50%,var(--violet) 70%,var(--cyan) 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 6s linear infinite}
+@keyframes shimmer{to{background-position:-220% 0}}
+.term-col{align-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:14px;transform:translateY(40px)}
+.term{width:min(420px,100%);border-radius:16px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(139,92,246,.45)}
+.term-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--dim)}
+.term-bar i{width:10px;height:10px;border-radius:50%;background:#f87171}.term-bar i:nth-child(2){background:#fbbf24}.term-bar i:nth-child(3){background:#4ade80}
+.term-bar span{margin-left:8px}
+.term-body{margin:0;padding:14px 16px 16px;height:178px;overflow:hidden;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#cfe3f5;white-space:pre-wrap}
+.term-body .c{color:var(--cyan)}.term-body .o{color:#8e9ab1}.term-body .ok{color:var(--green)}.term-body .w{color:var(--pink)}
+.term-body .cur{display:inline-block;width:8px;height:1.1em;vertical-align:-2px;background:var(--cyan);animation:blink 1s steps(1) infinite}
+.hint-click{margin:0;font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.04em}
+.project{position:relative;isolation:isolate}
+.project::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;z-index:-1;pointer-events:none;
+  background:conic-gradient(from var(--a,0deg),transparent 0 60%,rgba(34,211,238,.7) 75%,rgba(244,114,182,.6) 85%,transparent 95%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);animation:spin 7s linear infinite}
+.eco{margin-top:80px;display:grid;grid-template-columns:auto auto 1fr auto;gap:28px;align-items:center;padding:24px 30px;transition:border-color .3s,transform .4s var(--ease)}
+.eco:hover{border-color:rgba(34,211,238,.5);transform:translateY(-3px)}
+.eco-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.eco-logo{display:grid;place-items:center;min-width:170px;height:72px;padding:10px 18px;border-radius:14px;background:#fff}
+.eco-logo img{max-height:52px;max-width:200px;width:auto;height:auto;object-fit:contain}
+.eco-logo b{color:#0d1b2a;font-family:var(--body);font-weight:700;font-size:1rem;white-space:nowrap}
+.eco-logo b[hidden],.eco-logo img[hidden]{display:none}
+.eco-txt{color:var(--muted);font-size:.97rem}.eco-txt strong{color:var(--text);font-weight:600}
+.eco-arrow{width:22px;height:22px;color:var(--muted)}
+@media (max-width:980px){.term-col{display:none}.eco{grid-template-columns:1fr;gap:16px;text-align:left}.eco-logo{justify-self:start}.eco-arrow{display:none}}
 /* ---------- responsive ---------- */
 @media (max-width:980px){
   .hero-grid,.about-grid,.project{grid-template-columns:1fr}
@@ -302,11 +329,11 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
 
 <main id="top">
   <!-- HERO -->
-  <section class="hero" data-shape="sphere" id="hero">
+  <section class="hero" data-shape="orbit" id="hero">
     <div class="wrap hero-grid">
       <div>
         <span class="status reveal"><span class="pulse"></span>Disponible pour des missions freelance · Bordeaux &amp; remote</span>
-        <h1><span data-scramble class="l1">Hosni</span><span data-scramble class="l2 grad">Ben Hassen</span></h1>
+        <h1><span data-scramble class="l1">Hosni</span><span data-scramble class="l2 grad shimmer">Ben Hassen</span></h1>
         <div class="roles reveal" style="--d:2" aria-live="polite"><span class="pr">&gt;</span><span id="role">Développeur Fullstack</span><span class="caret"></span></div>
         <p class="lead reveal" style="--d:3">Je conçois des produits complets, <strong style="color:var(--text);font-weight:600">du modèle d'IA jusqu'au matériel</strong> : chatbots et assistants vocaux, sites et applications, objets connectés et traitement du signal radio. Un seul interlocuteur, du prototype à la production.</p>
         <div class="cta-row reveal" style="--d:4">
@@ -320,7 +347,13 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
           <div class="stat glass reveal" style="--d:7"><b><span data-count="100">100</span> %</b><span>IA embarquée, sans cloud</span></div>
         </div>
       </div>
-      <div aria-hidden="true"></div>
+      <div class="term-col" aria-hidden="true">
+        <div class="term glass">
+          <div class="term-bar"><i></i><i></i><i></i><span>~/missions — zsh</span></div>
+          <pre class="term-body" id="term"></pre>
+        </div>
+        <p class="hint-click">Cliquez dans le vide pour envoyer une onde ✦</p>
+      </div>
     </div>
     <div class="scroll-hint" aria-hidden="true"><div class="mouse"></div>Défiler</div>
   </section>
@@ -357,6 +390,14 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
           <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>Français · Anglais</span>
         </div>
       </div>
+    </div>
+    <div class="wrap">
+      <a class="eco glass reveal" href="https://www.bordeauxtechnowest.com/" target="_blank" rel="noopener">
+        <span class="eco-k">Incubé à</span>
+        <span class="eco-logo"><img src="technowest.png" alt="Bordeaux Technowest" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><b hidden>Bordeaux Technowest</b></span>
+        <span class="eco-txt"><strong>SkyKraken est accompagnée par Bordeaux Technowest</strong>, la technopole de Bordeaux Métropole, au cœur de l'écosystème aéronautique, spatial, défense et deeptech.</span>
+        <svg class="eco-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+      </a>
     </div>
   </section>
 
@@ -549,7 +590,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
   </section>
 
   <!-- CONTACT -->
-  <section id="contact" class="contact" data-shape="sphere2">
+  <section id="contact" class="contact" data-shape="orbit2">
     <div class="wrap">
       <div class="contact-box glass reveal">
         <span class="eyebrow">06 — Contact</span>
@@ -706,6 +747,42 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
     catch (err) { location.href = 'mailto:' + mail; }
   });
 
+
+  /* live terminal (hero) */
+  const term = document.getElementById('term');
+  const script = [
+    ['$ ', 'c', 'python agent.py --mission "qualifier les prospects"'],
+    ['', 'o', '→ agent IA prêt · LLM + outils [CRM, agenda, e-mail]'],
+    ['$ ', 'c', 'skykraken scan --band 70MHz-6GHz'],
+    ['', 'w', '⚠ 3 drones détectés · pilote localisé · alerte envoyée'],
+    ['$ ', 'c', 'npm run build   # application React'],
+    ['', 'ok', '✓ build terminé · déployé en production'],
+    ['$ ', 'c', 'train --model assistant-vocal --data ./docs'],
+    ['', 'ok', '✓ modèle entraîné · prêt à répondre aux clients'],
+    ['$ ', 'c', 'flash --board esp32 firmware.bin'],
+    ['', 'ok', '✓ capteurs connectés · données en temps réel']
+  ];
+  const esc = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  if (term && !reduce) {
+    let li = 0, ci = 0, lines = [];
+    const render = (partial) => { term.innerHTML = lines.concat(partial !== undefined ? [partial + '<span class="cur"></span>'] : []).slice(-7).join('\n'); };
+    const step = () => {
+      const [pre, cls, txt] = script[li];
+      if (cls === 'c') {
+        ci++;
+        render('<span class="c">' + pre + '</span>' + esc(txt.slice(0, ci)));
+        if (ci < txt.length) return setTimeout(step, 28 + Math.random() * 50);
+        lines.push('<span class="c">' + pre + '</span>' + esc(txt)); ci = 0; li = (li + 1) % script.length;
+        return setTimeout(step, 380);
+      }
+      lines.push('<span class="' + cls + '">' + esc(txt) + '</span>'); li = (li + 1) % script.length;
+      render(''); if (lines.length > 30) lines = lines.slice(-10);
+      setTimeout(step, li % 2 === 0 ? 1300 : 500);
+    };
+    setTimeout(step, 1400);
+  } else if (term) {
+    term.innerHTML = script.slice(0, 6).map(([pre, cls, txt]) => '<span class="' + cls + '">' + pre + esc(txt) + '</span>').join('\n');
+  }
   /* SkyKraken radar */
   const cv = document.getElementById('radar'), ctx = cv.getContext('2d');
   let W = 0, H = 0, DPR = 1, running = false, sweep = 0, last = performance.now();
@@ -794,263 +871,424 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
 <!-- ================= WebGL particle morph (Three.js) ================= -->
 <script type="module">
 import * as THREE from 'three';
+import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ------------------------------------------------------------------
+   Living particle field: GPGPU simulation (curl-noise flow + spring
+   attraction toward a target shape + mouse vortex + click shockwave),
+   an iridescent "AI core" orb with orbital rings, and bloom.
+   It never stops moving; scrolling only changes the attractor shape.
+------------------------------------------------------------------- */
+
+const NOISE = /* glsl */`
+vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
+vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1./6.,1./3.); const vec4 D=vec4(0.,.5,1.,2.);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));
+  float n_=.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.+1.; vec4 s1=floor(b1)*2.+1.; vec4 sh=-step(h,vec4(0.));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.); m=m*m;
+  return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+
+const CURL = /* glsl */`
+vec3 snoiseVec3(vec3 x){
+  return vec3(snoise(x), snoise(vec3(x.y-19.1, x.z+33.4, x.x+47.2)), snoise(vec3(x.z+74.2, x.x-124.5, x.y+99.4)));
+}
+vec3 curlNoise(vec3 p){
+  const float e=.1; vec3 dx=vec3(e,0.,0.), dy=vec3(0.,e,0.), dz=vec3(0.,0.,e);
+  vec3 px0=snoiseVec3(p-dx), px1=snoiseVec3(p+dx), py0=snoiseVec3(p-dy), py1=snoiseVec3(p+dy), pz0=snoiseVec3(p-dz), pz1=snoiseVec3(p+dz);
+  vec3 c=vec3(py1.z-py0.z-pz1.y+pz0.y, pz1.x-pz0.x-px1.z+px0.z, px1.y-px0.y-py1.x+py0.x);
+  return c/(length(c)+1e-4);
+}`;
 
 function init() {
   const canvas = document.getElementById('gl');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile = matchMedia('(max-width: 760px)').matches;
+  const mobile = matchMedia('(max-width: 760px)').matches || matchMedia('(pointer: coarse)').matches;
+
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
   } catch (e) { return; }
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mobile ? 1.5 : 1.75));
+  if (!renderer.capabilities.isWebGL2) return;
+  const PR = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 1.75);
+  renderer.setPixelRatio(PR);
   renderer.setSize(innerWidth, innerHeight, false);
-  renderer.setClearColor(0x000000, 0);
+  renderer.setClearColor(0x000000, 1);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
   camera.position.set(0, 0, 8.5);
 
-  const N = mobile ? 6500 : 15000;
+  /* ---------- particle budget ---------- */
+  const SIZE = mobile ? 96 : 192;
+  const N = SIZE * SIZE;
+
+  /* ---------- shape generators (RGBA, w = per-particle random) ---------- */
   const R = Math.random;
   const gauss = () => (R() + R() + R() + R() - 2) / 2;
-  const rotX = (arr, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < arr.length; i += 3) { const y = arr[i + 1], z = arr[i + 2]; arr[i + 1] = y * c - z * s; arr[i + 2] = y * s + z * c; } return arr; };
-  const rotZ = (arr, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < arr.length; i += 3) { const x = arr[i], y = arr[i + 1]; arr[i] = x * c - y * s; arr[i + 1] = x * s + y * c; } return arr; };
-
-  /* ---------- shapes ---------- */
-  function sphere(tilt) {
-    const a = new Float32Array(N * 3), Rad = 2.25, ga = Math.PI * (3 - Math.sqrt(5)), ringN = Math.floor(N * 0.16);
+  const rnd = new Float32Array(N); for (let i = 0; i < N; i++) rnd[i] = R();
+  function pack(fn, post) {
+    const a = new Float32Array(N * 4), v = [0, 0, 0];
     for (let i = 0; i < N; i++) {
-      let x, y, z;
-      if (i < ringN) {
-        const t = R() * Math.PI * 2, rr = 3.15 + gauss() * 0.06 + (R() < 0.3 ? 0.35 : 0);
-        x = Math.cos(t) * rr; y = gauss() * 0.02; z = Math.sin(t) * rr;
-        const c = Math.cos(tilt), s = Math.sin(tilt); const y2 = y * c - z * s, z2 = y * s + z * c; y = y2; z = z2;
-      } else {
-        const k = i - ringN, M = N - ringN, yy = 1 - (k / (M - 1)) * 2, r = Math.sqrt(1 - yy * yy), th = ga * k, j = 1 + (R() - 0.5) * 0.03;
-        x = Math.cos(th) * r * Rad * j; y = yy * Rad * j; z = Math.sin(th) * r * Rad * j;
-      }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+      fn(i, v);
+      if (post) post(v);
+      a[i * 4] = v[0]; a[i * 4 + 1] = v[1]; a[i * 4 + 2] = v[2]; a[i * 4 + 3] = rnd[i];
     }
-    return rotZ(a, 0.25);
+    return a;
+  }
+  const rotX = (a) => { const c = Math.cos(a), s = Math.sin(a); return (v) => { const y = v[1], z = v[2]; v[1] = y * c - z * s; v[2] = y * s + z * c; }; };
+  const rotZ = (a) => { const c = Math.cos(a), s = Math.sin(a); return (v) => { const x = v[0], y = v[1]; v[0] = x * c - y * s; v[1] = x * s + y * c; }; };
+
+  function orbit(tilt) {
+    const ring = rotX(tilt), tz = rotZ(0.28);
+    return pack((i, v) => {
+      const u = rnd[i];
+      if (u < 0.22) {                       /* orbital ring */
+        const t = R() * Math.PI * 2, rr = 2.9 + gauss() * 0.08 + (R() < 0.35 ? 0.42 : 0);
+        v[0] = Math.cos(t) * rr; v[1] = gauss() * 0.03; v[2] = Math.sin(t) * rr; ring(v); tz(v);
+      } else {                              /* shell around the core */
+        const th = R() * Math.PI * 2, ph = Math.acos(2 * R() - 1), r = 1.7 + Math.pow(R(), 1.6) * 1.5;
+        v[0] = Math.sin(ph) * Math.cos(th) * r; v[1] = Math.cos(ph) * r; v[2] = Math.sin(ph) * Math.sin(th) * r;
+      }
+    });
   }
   function knot() {
-    const a = new Float32Array(N * 3), p = 2, q = 3;
-    for (let i = 0; i < N; i++) {
-      const t = (i / N) * Math.PI * 2 + R() * 0.002, r = Math.cos(q * t) + 2;
-      a[i * 3] = r * Math.cos(p * t) * 0.85 + gauss() * 0.16;
-      a[i * 3 + 1] = r * Math.sin(p * t) * 0.85 + gauss() * 0.16;
-      a[i * 3 + 2] = -Math.sin(q * t) * 0.85 + gauss() * 0.16;
-    }
-    return rotX(a, 0.5);
+    const rx = rotX(0.5);
+    return pack((i, v) => {
+      const t = (i / N) * Math.PI * 2, r = Math.cos(3 * t) + 2;
+      v[0] = r * Math.cos(2 * t) * 0.85 + gauss() * 0.15; v[1] = r * Math.sin(2 * t) * 0.85 + gauss() * 0.15; v[2] = -Math.sin(3 * t) * 0.85 + gauss() * 0.15;
+    }, rx);
   }
   function neural() {
     const layers = [5, 8, 9, 8, 5], L = layers.length, nodes = [];
     layers.forEach((n, l) => { for (let j = 0; j < n; j++) nodes.push({ l, x: -3.4 + (6.8 * l) / (L - 1), y: (j - (n - 1) / 2) * 0.62, z: (((j * 7 + l * 3) % 5) - 2) * 0.28 }); });
     const byL = layers.map((_, l) => nodes.filter((n) => n.l === l));
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++) {
-      let x, y, z;
-      if (R() < 0.34) {
-        const n = nodes[(R() * nodes.length) | 0], s = 0.07;
-        x = n.x + gauss() * s; y = n.y + gauss() * s; z = n.z + gauss() * s;
-      } else {
+    return pack((i, v) => {
+      if (R() < 0.34) { const n = nodes[(R() * nodes.length) | 0]; v[0] = n.x + gauss() * 0.07; v[1] = n.y + gauss() * 0.07; v[2] = n.z + gauss() * 0.07; }
+      else {
         const l = (R() * (L - 1)) | 0, A = byL[l][(R() * byL[l].length) | 0], B = byL[l + 1][(R() * byL[l + 1].length) | 0], t = R();
-        x = A.x + (B.x - A.x) * t + gauss() * 0.012; y = A.y + (B.y - A.y) * t + gauss() * 0.012; z = A.z + (B.z - A.z) * t + gauss() * 0.012;
+        v[0] = A.x + (B.x - A.x) * t; v[1] = A.y + (B.y - A.y) * t; v[2] = A.z + (B.z - A.z) * t;
       }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
-    }
-    return a;
+    });
   }
   function drone() {
-    const a = new Float32Array(N * 3), arm = 1.35, rot = 0.72, motors = [[1, 1], [-1, 1], [1, -1], [-1, -1]].map(([sx, sz]) => [sx * arm * 0.7071, sz * arm * 0.7071]);
-    for (let i = 0; i < N; i++) {
+    const arm = 1.35, rot = 0.72, M = [[1, 1], [-1, 1], [1, -1], [-1, -1]].map(([a, b]) => [a * arm * 0.7071, b * arm * 0.7071]), rx = rotX(0.42);
+    return pack((i, v) => {
       const u = R(); let x, y, z;
-      if (u < 0.1) { /* body ellipsoid */
-        const th = R() * Math.PI * 2, ph = Math.acos(2 * R() - 1);
-        x = Math.sin(ph) * Math.cos(th) * 0.5; y = Math.cos(ph) * 0.17; z = Math.sin(ph) * Math.sin(th) * 0.72;
-      } else if (u < 0.22) { /* arms */
-        const m = motors[(R() * 4) | 0], t = 0.25 + R() * 0.75;
-        x = m[0] * t + gauss() * 0.03; y = 0.02 + gauss() * 0.03; z = m[1] * t + gauss() * 0.03;
-      } else if (u < 0.27) { /* motors */
-        const m = motors[(R() * 4) | 0], th = R() * Math.PI * 2;
-        x = m[0] + Math.cos(th) * 0.11; y = R() * 0.2; z = m[1] + Math.sin(th) * 0.11;
-      } else if (u < 0.55) { /* rotor rings */
-        const m = motors[(R() * 4) | 0], th = R() * Math.PI * 2, rr = rot + gauss() * 0.015;
-        x = m[0] + Math.cos(th) * rr; y = 0.22 + gauss() * 0.01; z = m[1] + Math.sin(th) * rr;
-      } else if (u < 0.68) { /* rotor blur discs */
-        const m = motors[(R() * 4) | 0], th = R() * Math.PI * 2, rr = Math.sqrt(R()) * rot;
-        x = m[0] + Math.cos(th) * rr; y = 0.22; z = m[1] + Math.sin(th) * rr;
-      } else if (u < 0.71) { /* camera gimbal */
-        const th = R() * Math.PI * 2, ph = Math.acos(2 * R() - 1);
-        x = Math.sin(ph) * Math.cos(th) * 0.13; y = -0.26 + Math.cos(ph) * 0.13; z = 0.62 + Math.sin(ph) * Math.sin(th) * 0.13;
-      } else if (u < 0.78) { /* landing skids */
-        const sx = R() < 0.5 ? -1 : 1;
-        if (R() < 0.7) { x = sx * 0.42; y = -0.55; z = (R() - 0.5) * 1.3; }
-        else { const t = R(); x = sx * (0.25 + 0.17 * t); y = -0.1 - 0.45 * t; z = (R() < 0.5 ? -0.35 : 0.35); }
-      } else { /* detection rings on the ground */
-        const th = R() * Math.PI * 2, ring = [1.9, 2.6, 3.3][(R() * 3) | 0], rr = ring + gauss() * 0.02;
-        x = Math.cos(th) * rr; y = -1.35; z = Math.sin(th) * rr;
-      }
-      a[i * 3] = x * 1.15; a[i * 3 + 1] = y * 1.15; a[i * 3 + 2] = z * 1.15;
-    }
-    return rotX(a, 0.42);
+      if (u < 0.1) { const th = R() * 6.2832, ph = Math.acos(2 * R() - 1); x = Math.sin(ph) * Math.cos(th) * 0.5; y = Math.cos(ph) * 0.17; z = Math.sin(ph) * Math.sin(th) * 0.72; }
+      else if (u < 0.22) { const m = M[(R() * 4) | 0], t = 0.25 + R() * 0.75; x = m[0] * t + gauss() * 0.03; y = 0.02 + gauss() * 0.03; z = m[1] * t + gauss() * 0.03; }
+      else if (u < 0.27) { const m = M[(R() * 4) | 0], th = R() * 6.2832; x = m[0] + Math.cos(th) * 0.11; y = R() * 0.2; z = m[1] + Math.sin(th) * 0.11; }
+      else if (u < 0.55) { const m = M[(R() * 4) | 0], th = R() * 6.2832, rr = rot + gauss() * 0.015; x = m[0] + Math.cos(th) * rr; y = 0.22; z = m[1] + Math.sin(th) * rr; }
+      else if (u < 0.66) { const m = M[(R() * 4) | 0], th = R() * 6.2832, rr = Math.sqrt(R()) * rot; x = m[0] + Math.cos(th) * rr; y = 0.22; z = m[1] + Math.sin(th) * rr; }
+      else if (u < 0.69) { const th = R() * 6.2832, ph = Math.acos(2 * R() - 1); x = Math.sin(ph) * Math.cos(th) * 0.13; y = -0.26 + Math.cos(ph) * 0.13; z = 0.62 + Math.sin(ph) * Math.sin(th) * 0.13; }
+      else if (u < 0.76) { const sx = R() < 0.5 ? -1 : 1; if (R() < 0.7) { x = sx * 0.42; y = -0.55; z = (R() - 0.5) * 1.3; } else { const t = R(); x = sx * (0.25 + 0.17 * t); y = -0.1 - 0.45 * t; z = R() < 0.5 ? -0.35 : 0.35; } }
+      else { const th = R() * 6.2832, rr = [1.9, 2.6, 3.3][(R() * 3) | 0] + gauss() * 0.02; x = Math.cos(th) * rr; y = -1.35; z = Math.sin(th) * rr; }
+      v[0] = x * 1.15; v[1] = y * 1.15; v[2] = z * 1.15;
+    }, rx);
   }
   function ripple() {
-    const a = new Float32Array(N * 3), G = Math.ceil(Math.sqrt(N)), S = 8;
-    for (let i = 0; i < N; i++) {
-      const ix = i % G, iz = Math.floor(i / G), x = (ix / (G - 1) - 0.5) * S, z = (iz / (G - 1) - 0.5) * S * 0.75, r = Math.sqrt(x * x + z * z);
-      a[i * 3] = x; a[i * 3 + 1] = 0.6 * Math.sin(r * 2.4) * Math.exp(-r * 0.25); a[i * 3 + 2] = z;
-    }
-    return rotX(a, 0.55);
+    const G = Math.ceil(Math.sqrt(N)), S = 8, rx = rotX(0.55);
+    return pack((i, v) => {
+      const x = ((i % G) / (G - 1) - 0.5) * S, z = (Math.floor(i / G) / (G - 1) - 0.5) * S * 0.75, r = Math.hypot(x, z);
+      v[0] = x; v[1] = 0.6 * Math.sin(r * 2.4) * Math.exp(-r * 0.25); v[2] = z;
+    }, rx);
   }
   function galaxy() {
-    const a = new Float32Array(N * 3), arms = 3;
-    for (let i = 0; i < N; i++) {
-      const core = R() < 0.18, r = core ? Math.abs(gauss()) * 0.5 : Math.pow(R(), 0.7) * 3.6;
-      const ang = (i % arms) * (Math.PI * 2 / arms) + r * 1.55 + gauss() * (0.35 / (r + 0.35));
-      a[i * 3] = Math.cos(ang) * r; a[i * 3 + 1] = gauss() * (core ? 0.25 : 0.14 * (1 - r / 4)); a[i * 3 + 2] = Math.sin(ang) * r;
-    }
-    return rotX(a, 0.95);
+    const rx = rotX(0.95);
+    return pack((i, v) => {
+      const core = R() < 0.16, r = core ? Math.abs(gauss()) * 0.5 : Math.pow(R(), 0.7) * 3.6;
+      const ang = (i % 3) * (Math.PI * 2 / 3) + r * 1.55 + gauss() * (0.35 / (r + 0.35));
+      v[0] = Math.cos(ang) * r; v[1] = gauss() * (core ? 0.25 : 0.14 * (1 - r / 4)); v[2] = Math.sin(ang) * r;
+    }, rx);
   }
-  const shapes = { sphere: sphere(0.35), knot: knot(), neural: neural(), drone: drone(), ripple: ripple(), galaxy: galaxy(), sphere2: sphere(-0.5) };
+  const tex = (data) => { const t = new THREE.DataTexture(data, SIZE, SIZE, THREE.RGBAFormat, THREE.FloatType); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; };
+  const shapes = { orbit: tex(orbit(0.38)), knot: tex(knot()), neural: tex(neural()), drone: tex(drone()), ripple: tex(ripple()), galaxy: tex(galaxy()), orbit2: tex(orbit(-0.55)) };
 
-  /* placement per section: x offset (desktop), y, opacity */
+  /* per-section behaviour: placement, opacity, core visibility, flow strength */
   const layout = {
-    sphere: { x: 2.55, y: 0.1, o: 1, s: 1 },
-    knot: { x: 2.9, y: 0, o: 0.55, s: 0.9 },
-    neural: { x: 0, y: 0, o: 0.42, s: 1.05 },
-    drone: { x: -2.6, y: 0.1, o: 0.55, s: 1 },
-    ripple: { x: 0, y: -0.4, o: 0.42, s: 1.1 },
-    galaxy: { x: 0, y: 0.2, o: 0.36, s: 1.1 },
-    sphere2: { x: 0, y: 0, o: 0.7, s: 1.15 }
+    orbit:  { x: 2.45, y: 0.05, s: 1.0,  o: 0.9,  orb: 1.0, curl: 1.5, att: 3.0, freq: 0.55, mx: 1.0, my: 1.9, ms: 0.5 },
+    knot:   { x: -3.1, y: 0,    s: 0.85, o: 0.45,  orb: 0,   curl: 1.1, att: 3.2, freq: 0.7 },
+    neural: { x: 0,    y: 0,    s: 1.05, o: 0.32, orb: 0,   curl: 0.7, att: 4.5, freq: 0.9 },
+    drone:  { x: -2.7, y: 0.1,  s: 1.0,  o: 0.5, orb: 0,   curl: 0.5, att: 6.0, freq: 1.0 },
+    ripple: { x: 0,    y: -0.4, s: 1.1,  o: 0.32, orb: 0,   curl: 0.8, att: 3.5, freq: 0.6 },
+    galaxy: { x: 0,    y: 0.2,  s: 1.1,  o: 0.3,  orb: 0,   curl: 1.3, att: 2.4, freq: 0.5 },
+    orbit2: { x: 0,    y: 0,    s: 1.15, o: 0.7,  orb: 0.8, curl: 1.5, att: 2.4, freq: 0.55 }
   };
 
-  /* ---------- geometry & material ---------- */
-  const from = new Float32Array(shapes.sphere), to = new Float32Array(shapes.sphere), rnd = new Float32Array(N);
-  for (let i = 0; i < N; i++) rnd[i] = R();
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
-  const aFrom = new THREE.BufferAttribute(from, 3), aTo = new THREE.BufferAttribute(to, 3);
-  aFrom.setUsage(THREE.DynamicDrawUsage); aTo.setUsage(THREE.DynamicDrawUsage);
-  geo.setAttribute('aFrom', aFrom); geo.setAttribute('aTo', aTo);
-  geo.setAttribute('aRand', new THREE.BufferAttribute(rnd, 1));
+  /* ---------- GPGPU ---------- */
+  const gpu = new GPUComputationRenderer(SIZE, SIZE, renderer);
+  if (!renderer.extensions.has('EXT_color_buffer_float')) gpu.setDataType(THREE.HalfFloatType);
+  const pos0 = gpu.createTexture(), vel0 = gpu.createTexture();
+  { const p = pos0.image.data; for (let i = 0; i < N; i++) { const th = R() * 6.2832, ph = Math.acos(2 * R() - 1), r = 4.5 + R() * 3; p[i * 4] = Math.sin(ph) * Math.cos(th) * r; p[i * 4 + 1] = Math.cos(ph) * r; p[i * 4 + 2] = Math.sin(ph) * Math.sin(th) * r; p[i * 4 + 3] = rnd[i]; } }
 
-  const uniforms = {
-    uProgress: { value: 1 }, uTime: { value: 0 }, uSize: { value: mobile ? 30 : 26 },
-    uPR: { value: renderer.getPixelRatio() }, uOpacity: { value: 0 },
-    uMouse: { value: new THREE.Vector2(9, 9) }, uAspect: { value: innerWidth / innerHeight },
+  const velShader = /* glsl */`
+    uniform float uTime, uDelta, uAttract, uCurl, uFreq, uSwitch, uMouseOn, uShockTime;
+    uniform vec3 uMouse, uShockPos;
+    uniform sampler2D tTarget, tPrev;
+    ${NOISE}
+    ${CURL}
+    void main(){
+      vec2 uv = gl_FragCoord.xy / resolution.xy;
+      vec4 P = texture2D(texturePosition, uv); vec3 pos = P.xyz; float rnd = P.w;
+      vec3 vel = texture2D(textureVelocity, uv).xyz;
+      float ramp = smoothstep(0., 1., (uTime - uSwitch - rnd * .9) / 1.4);
+      vec3 target = mix(texture2D(tPrev, uv).xyz, texture2D(tTarget, uv).xyz, ramp);
+      vec3 acc = (target - pos) * uAttract;
+      acc += curlNoise(pos * uFreq + vec3(0., uTime * .12, uTime * .05)) * uCurl * (.55 + rnd);
+      vec3 m = pos - uMouse; float md = length(m); vec3 mn = m / (md + 1e-4);
+      float mf = exp(-md * md * 1.4) * uMouseOn;
+      acc += mn * mf * 7. + cross(mn, vec3(0., 0., 1.)) * mf * 11.;
+      float age = uTime - uShockTime; vec3 s = pos - uShockPos; float sd = length(s);
+      float wave = exp(-pow(sd - age * 5.5, 2.) * 2.5) * exp(-age * 1.4);
+      acc += s / (sd + 1e-4) * wave * 55.;
+      vel += acc * uDelta;
+      vel *= pow(.935, uDelta * 60.);
+      gl_FragColor = vec4(vel, 1.);
+    }`;
+  const posShader = /* glsl */`
+    uniform float uDelta;
+    void main(){
+      vec2 uv = gl_FragCoord.xy / resolution.xy;
+      vec4 P = texture2D(texturePosition, uv);
+      vec3 vel = texture2D(textureVelocity, uv).xyz;
+      gl_FragColor = vec4(P.xyz + vel * uDelta, P.w);
+    }`;
+  const velVar = gpu.addVariable('textureVelocity', velShader, vel0);
+  const posVar = gpu.addVariable('texturePosition', posShader, pos0);
+  gpu.setVariableDependencies(velVar, [velVar, posVar]);
+  gpu.setVariableDependencies(posVar, [velVar, posVar]);
+  const vu = velVar.material.uniforms;
+  Object.assign(vu, {
+    uTime: { value: 0 }, uDelta: { value: 0.016 }, uAttract: { value: 2.4 }, uCurl: { value: 1.5 }, uFreq: { value: 0.55 },
+    uSwitch: { value: -10 }, uMouse: { value: new THREE.Vector3(99, 99, 99) }, uMouseOn: { value: 0 },
+    uShockPos: { value: new THREE.Vector3(99, 99, 99) }, uShockTime: { value: -100 },
+    tTarget: { value: shapes.orbit }, tPrev: { value: shapes.orbit }
+  });
+  posVar.material.uniforms.uDelta = { value: 0.016 };
+  const err = gpu.init();
+  if (err !== null) { console.warn(err); return; }
+
+  /* ---------- particle rendering ---------- */
+  const geo = new THREE.BufferGeometry();
+  const refs = new Float32Array(N * 2);
+  for (let i = 0; i < N; i++) { refs[i * 2] = ((i % SIZE) + 0.5) / SIZE; refs[i * 2 + 1] = (Math.floor(i / SIZE) + 0.5) / SIZE; }
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  geo.setAttribute('ref', new THREE.BufferAttribute(refs, 2));
+  const pu = {
+    tPos: { value: null }, tVel: { value: null }, uSize: { value: mobile ? 30 : 20 }, uPR: { value: PR }, uOpacity: { value: 0 }, uGain: { value: mobile ? 0.55 : 0.3 },
     uC1: { value: new THREE.Color('#22d3ee') }, uC2: { value: new THREE.Color('#8b5cf6') }, uC3: { value: new THREE.Color('#f472b6') }
   };
-  const mat = new THREE.ShaderMaterial({
-    uniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  const pmat = new THREE.ShaderMaterial({
+    uniforms: pu, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: /* glsl */`
-      attribute vec3 aFrom; attribute vec3 aTo; attribute float aRand;
-      uniform float uProgress, uTime, uSize, uPR, uAspect; uniform vec2 uMouse;
-      uniform vec3 uC1, uC2, uC3;
-      varying vec3 vColor; varying float vAlpha;
-      float ease(float t){ return t < .5 ? 4.*t*t*t : 1. - pow(-2.*t + 2., 3.) / 2.; }
+      uniform sampler2D tPos, tVel; uniform float uSize, uPR; uniform vec3 uC1, uC2, uC3;
+      attribute vec2 ref; varying vec3 vColor; varying float vA;
       void main(){
-        float p = ease(clamp(uProgress * 1.4 - aRand * .4, 0., 1.));
-        vec3 pos = mix(aFrom, aTo, p);
-        pos += normalize(pos + vec3(.0001)) * sin(p * 3.14159265) * .55 * aRand;
-        pos += vec3(sin(uTime * .7 + aRand * 40.), cos(uTime * .6 + aRand * 31.), sin(uTime * .5 + aRand * 23.)) * .028;
-        vec4 mv = modelViewMatrix * vec4(pos, 1.);
+        vec4 P = texture2D(tPos, ref); float sp = length(texture2D(tVel, ref).xyz);
+        vec4 mv = modelViewMatrix * vec4(P.xyz, 1.);
         gl_Position = projectionMatrix * mv;
-        vec2 ndc = gl_Position.xy / gl_Position.w;
-        vec2 d = ndc - uMouse; d.x *= uAspect;
-        float f = smoothstep(.32, 0., length(d));
-        gl_Position.xy += normalize(d + vec2(.0001)) * f * .09 * gl_Position.w;
-        gl_PointSize = uSize * uPR * (.45 + aRand * .9) / -mv.z * (1. + f * 1.2);
-        float h = clamp(pos.y * .22 + .5 + (aRand - .5) * .35, 0., 1.);
-        vColor = mix(uC1, uC2, h);
-        vColor = mix(vColor, uC3, step(.965, aRand));
-        vColor = mix(vColor, vec3(1.), f * .6);
-        vAlpha = .3 + .7 * smoothstep(-12.5, -5.5, mv.z);
+        float heat = clamp(sp * .28, 0., 1.);
+        gl_PointSize = min(uSize * uPR * (.45 + P.w * .85) * (1. + heat * .6) / -mv.z, 14. * uPR);
+        vec3 base = mix(uC1, uC2, clamp(P.y * .2 + .5 + (P.w - .5) * .35, 0., 1.));
+        base = mix(base, uC3, step(.97, P.w));
+        vColor = mix(base, uC3, smoothstep(.3, .85, heat));
+        vColor = mix(vColor, vec3(1.), smoothstep(.8, 1., heat) * .55);
+        vA = (.3 + .7 * smoothstep(-13., -5.5, mv.z)) * smoothstep(-2., -4.5, mv.z);
       }`,
     fragmentShader: /* glsl */`
-      uniform float uOpacity; varying vec3 vColor; varying float vAlpha;
+      uniform float uOpacity, uGain; varying vec3 vColor; varying float vA;
       void main(){
         float d = length(gl_PointCoord - .5);
-        float a = smoothstep(.5, .0, d); a *= a;
-        gl_FragColor = vec4(vColor, a * vAlpha * uOpacity);
+        float a = smoothstep(.5, 0., d); a *= a;
+        gl_FragColor = vec4(vColor * a * vA * uOpacity * uGain, 1.);
+        #include <colorspace_fragment>
       }`
   });
-  const points = new THREE.Points(geo, mat); points.frustumCulled = false;
-  const group = new THREE.Group(), spin = new THREE.Group();
-  spin.add(points); group.add(spin); scene.add(group);
+  const points = new THREE.Points(geo, pmat); points.frustumCulled = false;
 
-  /* background stars */
-  const SN = mobile ? 700 : 1600, sp = new Float32Array(SN * 3);
-  for (let i = 0; i < SN; i++) { const r = 14 + R() * 26, th = R() * Math.PI * 2, ph = Math.acos(2 * R() - 1); sp[i * 3] = r * Math.sin(ph) * Math.cos(th); sp[i * 3 + 1] = r * Math.cos(ph); sp[i * 3 + 2] = -Math.abs(r * Math.sin(ph) * Math.sin(th)); }
+  /* ---------- AI core: iridescent displaced orb + glow + orbital rings ---------- */
+  const ou = { uTime: { value: 0 }, uOpacity: { value: 0 }, uC1: pu.uC1, uC2: pu.uC2, uC3: pu.uC3 };
+  const orb = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, mobile ? 24 : 48), new THREE.ShaderMaterial({
+    uniforms: ou,
+    vertexShader: /* glsl */`
+      uniform float uTime; varying vec3 vN; varying vec3 vV; varying float vD;
+      ${NOISE}
+      void main(){
+        float d = snoise(position * 1.4 + vec3(uTime * .32)) * .2 + snoise(position * 3.6 - vec3(uTime * .55)) * .06;
+        vD = d;
+        vec4 mv = modelViewMatrix * vec4(position + normal * d, 1.);
+        vV = normalize(-mv.xyz); vN = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */`
+      uniform float uTime, uOpacity; uniform vec3 uC1, uC2, uC3;
+      varying vec3 vN; varying vec3 vV; varying float vD;
+      void main(){
+        float f = pow(1. - max(dot(vN, vV), 0.), 2.4);
+        vec3 c = mix(uC1, uC2, .5 + .5 * sin(vD * 16. + uTime * 1.2 + vN.y * 3.));
+        c = mix(c, uC3, (.5 + .5 * sin(vN.x * 4. - uTime * .8)) * .55);
+        float bands = .5 + .5 * sin(vD * 40. - uTime * 2.);
+        vec3 col = c * (.1 + f * 1.5) + c * bands * smoothstep(.05, .22, vD) * .5 + vec3(1.) * pow(f, 6.) * .6;
+        gl_FragColor = vec4(col * uOpacity, 1.);
+        #include <colorspace_fragment>
+      }`
+  }));
+  const glowTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+    const r = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    r.addColorStop(0, 'rgba(170,235,255,.85)'); r.addColorStop(0.18, 'rgba(34,211,238,.45)'); r.addColorStop(0.45, 'rgba(139,92,246,.18)'); r.addColorStop(1, 'rgba(139,92,246,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 256, 256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  })();
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
+  glow.scale.setScalar(4.2);
+  const rings = new THREE.Group();
+  const ringDefs = [[1.75, 0.35, 0.0, 0.9], [2.05, -0.9, 0.6, -0.6], [2.35, 1.2, -0.4, 0.45]];
+  const ringMeshes = ringDefs.map(([r, ax, az, sp], k) => {
+    const pts = []; for (let i = 0; i <= 256; i++) { const t = i / 256 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(t) * r, 0, Math.sin(t) * r)); }
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: [0x22d3ee, 0x8b5cf6, 0xf472b6][k], transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const sat = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
+    sat.scale.setScalar(0.5);
+    const holder = new THREE.Group(); holder.rotation.set(ax, 0, az); holder.add(line); holder.add(sat); rings.add(holder);
+    return { line, sat, r, sp, holder };
+  });
+  const core = new THREE.Group(); core.add(glow, orb, rings);
+
+  const group = new THREE.Group(), spin = new THREE.Group();
+  spin.add(points); group.add(spin, core); scene.add(group);
+
+  /* background stars (slow twinkle through rotation) */
+  const SN = mobile ? 700 : 1800, sp = new Float32Array(SN * 3);
+  for (let i = 0; i < SN; i++) { const r = 14 + R() * 26, th = R() * 6.2832, ph = Math.acos(2 * R() - 1); sp[i * 3] = r * Math.sin(ph) * Math.cos(th); sp[i * 3 + 1] = r * Math.cos(ph); sp[i * 3 + 2] = -Math.abs(r * Math.sin(ph) * Math.sin(th)); }
   const sgeo = new THREE.BufferGeometry(); sgeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
-  const stars = new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x9fb4d8, size: 0.06, sizeAttenuation: true, transparent: true, opacity: 0.55, depthWrite: false }));
+  const stars = new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x9fb4d8, size: 0.06, transparent: true, opacity: 0.6, depthWrite: false }));
   scene.add(stars);
 
-  /* ---------- morph control ---------- */
-  const MORPH = reduce ? 1 : 2000;
-  let current = 'sphere', morphStart = -1e9;
-  const easeJS = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  /* ---------- post-processing (bloom) ---------- */
+  let composer = null, bloom = null;
+  if (!mobile) {
+    composer = new EffectComposer(renderer);
+    composer.setPixelRatio(PR); composer.setSize(innerWidth, innerHeight);
+    composer.addPass(new RenderPass(scene, camera));
+    bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.75, 0.55, 0.02);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+  }
+
+  /* ---------- section → attractor shape ---------- */
+  let current = 'orbit', t = 0;
   function setShape(name) {
     if (name === current || !shapes[name]) return;
-    const p = uniforms.uProgress.value;
-    for (let i = 0; i < N; i++) {
-      const e = easeJS(Math.min(1, Math.max(0, p * 1.4 - rnd[i] * 0.4))), k = i * 3;
-      let x = from[k] + (to[k] - from[k]) * e, y = from[k + 1] + (to[k + 1] - from[k + 1]) * e, z = from[k + 2] + (to[k + 2] - from[k + 2]) * e;
-      const len = Math.hypot(x, y, z) || 1, b = Math.sin(e * Math.PI) * 0.55 * rnd[i];
-      from[k] = x + x / len * b; from[k + 1] = y + y / len * b; from[k + 2] = z + z / len * b;
-    }
-    to.set(shapes[name]);
-    aFrom.needsUpdate = true; aTo.needsUpdate = true;
-    uniforms.uProgress.value = 0; morphStart = performance.now(); current = name;
+    vu.tPrev.value = shapes[current]; vu.tTarget.value = shapes[name];
+    vu.uSwitch.value = t; current = name;
+    if (reduce) settle(140);
   }
-  const sections = [...document.querySelectorAll('section[data-shape]')];
   const sio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) setShape(e.target.dataset.shape); }), { rootMargin: '-45% 0px -45% 0px' });
-  sections.forEach((s) => sio.observe(s));
+  document.querySelectorAll('section[data-shape]').forEach((s) => sio.observe(s));
 
-  /* ---------- interaction ---------- */
-  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+  /* ---------- pointer: vortex + click shockwave ---------- */
+  const ndc = new THREE.Vector2(), ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), hit = new THREE.Vector3();
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0, active: false };
+  function toLocal(cx, cy, out) {
+    ndc.set((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    if (!ray.ray.intersectPlane(plane, hit)) return false;
+    out.copy(hit); spin.worldToLocal(out); return true;
+  }
   addEventListener('pointermove', (e) => {
-    const nx = (e.clientX / innerWidth) * 2 - 1, ny = -(e.clientY / innerHeight) * 2 + 1;
-    mouse.tx = nx; mouse.ty = ny;
-    if (e.pointerType === 'mouse') uniforms.uMouse.value.set(nx, ny);
+    mouse.tx = (e.clientX / innerWidth) * 2 - 1; mouse.ty = -(e.clientY / innerHeight) * 2 + 1;
+    mouse.cx = e.clientX; mouse.cy = e.clientY; mouse.active = e.pointerType === 'mouse';
   }, { passive: true });
-  document.addEventListener('pointerleave', () => uniforms.uMouse.value.set(9, 9));
+  document.addEventListener('pointerleave', () => { mouse.active = false; });
+  addEventListener('pointerdown', (e) => {
+    if (e.target.closest('a,button,input,textarea')) return;
+    if (toLocal(e.clientX, e.clientY, vu.uShockPos.value)) vu.uShockTime.value = t;
+  });
   addEventListener('resize', () => {
     renderer.setSize(innerWidth, innerHeight, false);
+    if (composer) composer.setSize(innerWidth, innerHeight);
     camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-    uniforms.uAspect.value = camera.aspect;
   });
 
-  /* ---------- loop ---------- */
-  const clock = new THREE.Clock();
-  let visible = true, first = true, rafId = 0;
-  document.addEventListener('visibilitychange', () => { visible = !document.hidden; if (visible && !reduce) { clock.getDelta(); cancelAnimationFrame(rafId); rafId = requestAnimationFrame(frame); } });
+  /* ---------- simulation step & frame ---------- */
   const narrow = () => innerWidth < 980;
+  function simulate(dt) {
+    vu.uTime.value = t; vu.uDelta.value = dt; posVar.material.uniforms.uDelta.value = dt;
+    gpu.compute();
+  }
+  function settle(steps) { for (let i = 0; i < steps; i++) { t += 1 / 60; simulate(1 / 60); } draw(1 / 60); }
+
+  const ease = (a, b, k) => a + (b - a) * k;
+  function draw(dt) {
+    const L = layout[current], k = reduce ? 1 : 1 - Math.pow(0.03, dt), nar = narrow();
+    group.position.x = ease(group.position.x, nar ? (L.mx ?? 0) : L.x, k * 0.8);
+    group.position.y = ease(group.position.y, nar ? (L.my ?? L.y) : L.y, k * 0.8);
+    group.scale.setScalar(ease(group.scale.x, nar ? (L.ms ?? L.s * 0.8) : L.s, k));
+    pu.uOpacity.value = ease(pu.uOpacity.value, L.o * (nar ? 0.55 : 1), k * 0.5);
+    const orbO = ease(ou.uOpacity.value, L.orb * (nar ? 0.85 : 1), k * 0.6);
+    ou.uOpacity.value = orbO;
+    vu.uCurl.value = ease(vu.uCurl.value, L.curl, k); vu.uAttract.value = ease(vu.uAttract.value, L.att, k); vu.uFreq.value = ease(vu.uFreq.value, L.freq, k);
+    ou.uTime.value = t;
+    glow.material.opacity = orbO * (0.38 + Math.sin(t * 1.6) * 0.1);
+    glow.scale.setScalar(4 + Math.sin(t * 1.6) * 0.25);
+    ringMeshes.forEach((rm, i) => {
+      rm.holder.rotation.y += dt * rm.sp;
+      const a = t * (0.8 + i * 0.35) * Math.sign(rm.sp);
+      rm.sat.position.set(Math.cos(a) * rm.r, 0, Math.sin(a) * rm.r);
+      rm.line.material.opacity = orbO * 0.35; rm.sat.material.opacity = orbO;
+    });
+    core.visible = orbO > 0.01;
+    pu.tPos.value = gpu.getCurrentRenderTarget(posVar).texture;
+    pu.tVel.value = gpu.getCurrentRenderTarget(velVar).texture;
+    mouse.x = ease(mouse.x, mouse.tx, k); mouse.y = ease(mouse.y, mouse.ty, k);
+    if (!reduce) spin.rotation.y += dt * (current === 'galaxy' ? 0.22 : 0.1);
+    group.rotation.y = mouse.x * 0.3;
+    group.rotation.x = -mouse.y * 0.18;
+    camera.position.x = Math.sin(t * 0.13) * 0.35; camera.position.y = Math.cos(t * 0.11) * 0.25; camera.lookAt(0, 0, 0);
+    stars.rotation.y = t * 0.012; stars.rotation.x = Math.sin(t * 0.05) * 0.05;
+    if (mouse.active && toLocal(mouse.cx, mouse.cy, vu.uMouse.value)) vu.uMouseOn.value = ease(vu.uMouseOn.value, 1, k);
+    else vu.uMouseOn.value = ease(vu.uMouseOn.value, 0, k);
+    if (composer) composer.render(dt); else renderer.render(scene, camera);
+  }
+
+  const clock = new THREE.Clock();
+  let visible = true, rafId = 0, frames = 0, acc = 0, first = true;
   function frame() {
     if (!visible) return;
-    const dt = Math.min(0.05, clock.getDelta()), t = clock.elapsedTime;
-    uniforms.uTime.value = t;
-    uniforms.uProgress.value = Math.min(1, (performance.now() - morphStart) / MORPH);
-    const L = layout[current], tx = narrow() ? 0 : L.x, to_ = (narrow() ? 0.55 : 1) * L.o;
-    const k = 1 - Math.pow(0.02, dt);
-    group.position.x += (tx - group.position.x) * k * 0.9;
-    group.position.y += (L.y - group.position.y) * k * 0.9;
-    const sc = group.scale.x + (L.s * (narrow() ? 0.82 : 1) - group.scale.x) * k;
-    group.scale.setScalar(sc);
-    uniforms.uOpacity.value += (to_ - uniforms.uOpacity.value) * k * 0.6;
-    mouse.x += (mouse.tx - mouse.x) * k; mouse.y += (mouse.ty - mouse.y) * k;
-    if (!reduce) spin.rotation.y += dt * 0.12;
-    group.rotation.y = mouse.x * 0.35;
-    group.rotation.x = -mouse.y * 0.22 + scrollY * 0.00012;
-    stars.rotation.y = t * 0.01 + mouse.x * 0.05;
-    renderer.render(scene, camera);
+    const dt = Math.min(1 / 30, clock.getDelta());
+    t += dt;
+    simulate(dt);
+    draw(dt);
     if (first) { canvas.classList.add('ready'); first = false; }
-    if (!reduce) rafId = requestAnimationFrame(frame);
+    /* adaptive quality: drop bloom on slow GPUs */
+    if (composer && frames < 120) { frames++; acc += dt; if (frames === 120 && acc / 120 > 1 / 34) { composer = null; pu.uGain.value = 0.42; } }
+    rafId = requestAnimationFrame(frame);
   }
-  if (reduce) { uniforms.uOpacity.value = 0.8; uniforms.uProgress.value = 1; }
-  requestAnimationFrame(frame);
-  if (reduce) { const rerender = () => requestAnimationFrame(frame); addEventListener('scroll', rerender, { passive: true }); }
+  document.addEventListener('visibilitychange', () => {
+    visible = !document.hidden;
+    if (visible && !reduce) { clock.getDelta(); cancelAnimationFrame(rafId); rafId = requestAnimationFrame(frame); }
+  });
+  if (reduce) { pu.uOpacity.value = 0.8; ou.uOpacity.value = 1; settle(200); canvas.classList.add('ready'); }
+  else rafId = requestAnimationFrame(frame);
 }
 init();
 </script>
