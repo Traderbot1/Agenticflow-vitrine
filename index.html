@@ -270,6 +270,14 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
 .eco-txt{color:var(--muted);font-size:.97rem}.eco-txt strong{color:var(--text);font-weight:600}
 .eco-arrow{width:22px;height:22px;color:var(--muted)}
 @media (max-width:980px){.term-col{display:none}.eco{grid-template-columns:1fr;gap:16px;text-align:left}.eco-logo{justify-self:start}.eco-arrow{display:none}}
+/* ---------- EW layers ---------- */
+#hud{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.spectrum{position:relative;z-index:3;padding:30px 0 0;background:linear-gradient(180deg,transparent,rgba(3,5,11,.85) 40%)}
+.spec-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+.spec-info{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--pink);text-align:right}
+.spec-info i{width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 8px var(--pink);animation:blink 1s steps(1) infinite;flex:none}
+#spec{display:block;width:100%;height:200px;border-top:1px solid var(--line)}
+@media (max-width:760px){#spec{height:150px}.spec-head{flex-direction:column;align-items:flex-start;gap:6px}.spec-info{font-size:11px;text-align:left}}
 /* ---------- responsive ---------- */
 @media (max-width:980px){
   .hero-grid,.about-grid,.project{grid-template-columns:1fr}
@@ -304,6 +312,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <canvas id="gl" aria-hidden="true"></canvas>
+<canvas id="hud" aria-hidden="true"></canvas>
 <div class="vignette" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="cursor-dot" aria-hidden="true"></div><div class="cursor-ring" aria-hidden="true"></div>
@@ -353,6 +362,12 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
     </div>
     <div class="scroll-hint" aria-hidden="true"><div class="mouse"></div>Défiler</div>
   </section>
+
+  <!-- RF SPECTRUM -->
+  <div class="spectrum" aria-hidden="true">
+    <div class="wrap spec-head"><span class="eyebrow">Spectre radio · temps réel</span><span class="spec-info"><i></i><span id="specinfo">ANALYSE DU SPECTRE · 70 MHz → 6 GHz</span></span></div>
+    <canvas id="spec"></canvas>
+  </div>
 
   <!-- MARQUEE -->
   <div class="marquee" aria-label="Technologies">
@@ -780,6 +795,117 @@ footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--dim);fon
   } else if (term) {
     term.innerHTML = script.slice(0, 6).map(([pre, cls, txt]) => '<span class="' + cls + '">' + pre + esc(txt) + '</span>').join('\n');
   }
+
+  /* live multi-band RF spectrum + waterfall (decorative simulation) */
+  (() => {
+    const sc = document.getElementById('spec'); if (!sc) return;
+    const sx = sc.getContext('2d', { willReadFrequently: false });
+    const info = document.getElementById('specinfo');
+    const PANELS = [
+      { name: 'VHF / UHF', tag: 'Radio · balises', f0: 70, f1: 400, w: 1 },
+      { name: '433 MHz', tag: 'Télémétrie', f0: 430, f1: 440, w: .8 },
+      { name: '868 / 915 MHz', tag: 'Contrôle longue portée', f0: 860, f1: 930, w: 1 },
+      { name: '1.2 GHz', tag: 'Vidéo analogique', f0: 1080, f1: 1360, w: .9 },
+      { name: '2.4 GHz', tag: 'Saut de fréquence · drone', f0: 2400, f1: 2483.5, w: 1.5 },
+      { name: '5.8 GHz', tag: 'Vidéo numérique · drone', f0: 5725, f1: 5875, w: 1.5 }
+    ];
+    const MSG = ['DRONE DÉTECTÉ · 2.4 GHz · saut de fréquence', 'LIAISON VIDÉO · 5.8 GHz · OFDM 20 MHz', 'CONTRÔLE LONGUE PORTÉE · 868 MHz', 'VIDÉO ANALOGIQUE · 1.28 GHz', 'TÉLÉMÉTRIE · 433.92 MHz', 'ANALYSE DU SPECTRE · 70 MHz → 6 GHz'];
+    let W = 0, H = 0, top = 0, cols = [], lev = null, smooth = null, row = null, running = false, last = 0, mi = 0, msgT = 0;
+    const g = (f, c, bw) => { const z = (f - c) / bw; return Math.exp(-z * z); };
+    const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+    function size() {
+      const r = sc.getBoundingClientRect();
+      W = Math.max(320, Math.round(r.width)); H = Math.round(r.height); sc.width = W; sc.height = H; top = Math.round(H * .36);
+      const gap = 8, totalW = PANELS.reduce((a, p) => a + p.w, 0), usable = W - gap * (PANELS.length - 1);
+      cols = new Array(W).fill(null); let x = 0;
+      PANELS.forEach((p, pi) => {
+        const pw = Math.round(usable * p.w / totalW); p.x0 = x; p.x1 = Math.min(W, x + pw);
+        for (let i = x; i < p.x1; i++) cols[i] = { p: pi, f: p.f0 + (p.f1 - p.f0) * (i - x) / Math.max(1, pw - 1) };
+        x += pw + gap;
+      });
+      lev = new Float32Array(W); smooth = new Float32Array(W); row = sx.createImageData(W, 1);
+      sx.fillStyle = '#03050b'; sx.fillRect(0, 0, W, H);
+    }
+    function level(f, pi, t) {
+      let L = 0;
+      if (pi === 0) { [88.5, 101.2, 104.7].forEach((c) => { L += 26 * g(f, c, .9); }); [145.5, 162.0, 315.0, 380.2].forEach((c, k) => { if (Math.sin(t * .8 + k * 2.1) > .3) L += 24 * g(f, c, .7); }); }
+      else if (pi === 1) {
+        if ((t * 1.3) % 2 < .22) L += 34 * g(f, 433.92, .12);
+        if ((t * .45) % 1 < .65) { const fc = 431 + ((t * 1.1) % 1) * 8; L += 24 * g(f, fc, .18); }
+      } else if (pi === 2) {
+        const fc = 866.5 + ((t * 1.7) % 1) * 3.5; L += 27 * g(f, fc, .4);
+        const hop = 902 + hash(Math.floor(t * 14)) * 26; L += 30 * g(f, hop, .45);
+      } else if (pi === 3) {
+        if (Math.sin(t * .3) > -.4) L += 20 * g(f, 1280, 8) + 30 * g(f, 1280, .7);
+        L += 12 * g(f, 1176.45, 2.5);
+      } else if (pi === 4) {
+        const hop = 2402 + hash(Math.floor(t * 28)) * 79; L += 36 * g(f, hop, .55);
+        const hop2 = 2402 + hash(Math.floor(t * 28) + 99) * 79; L += 22 * g(f, hop2, .5);
+        const vid = 2422 + 20 * (Math.floor(t / 7) % 3); if (Math.abs(f - vid) < 5) L += 25 + Math.sin(f * 9 + t * 40) * 1.6;
+        if ((t * 2.7) % 1 < .07 && Math.abs(f - 2437) < 10) L += 18;
+      } else if (pi === 5) {
+        if (Math.abs(f - 5785) < 10) L += 25 + Math.sin(f * 3 + t * 30) * 1.6;
+        if (Math.sin(t * .45) > 0) L += 24 * g(f, 5740, 4);
+        if (Math.sin(t * .23 + 1) > .2) L += 18 * g(f, 5845, 3);
+      }
+      return L;
+    }
+    const STOPS = [[0, 3, 6, 18], [.25, 10, 40, 90], [.45, 20, 120, 170], [.62, 34, 211, 238], [.78, 139, 92, 246], [.9, 244, 114, 182], [1, 255, 240, 250]];
+    function cmap(v, out, o) {
+      v = Math.max(0, Math.min(1, v));
+      let i = 1; while (i < STOPS.length - 1 && v > STOPS[i][0]) i++;
+      const a = STOPS[i - 1], b = STOPS[i], k = (v - a[0]) / (b[0] - a[0]);
+      out[o] = a[1] + (b[1] - a[1]) * k; out[o + 1] = a[2] + (b[2] - a[2]) * k; out[o + 2] = a[3] + (b[3] - a[3]) * k; out[o + 3] = 255;
+    }
+    function draw(now) {
+      if (!row) return;
+      const t = now / 1000;
+      /* waterfall: scroll down 1px and paint the new row */
+      sx.drawImage(sc, 0, top, W, H - top - 1, 0, top + 1, W, H - top - 1);
+      const d = row.data;
+      for (let x = 0; x < W; x++) {
+        const c = cols[x], o = x * 4;
+        if (!c) { lev[x] = -1; d[o] = 3; d[o + 1] = 5; d[o + 2] = 11; d[o + 3] = 255; continue; }
+        const v = level(c.f, c.p, t) + Math.random() * 7;
+        lev[x] = v; smooth[x] = smooth[x] * .55 + v * .45;
+        cmap(v / 42, d, o);
+      }
+      sx.putImageData(row, 0, top);
+      /* spectrum trace */
+      sx.clearRect(0, 0, W, top); sx.fillStyle = '#03050b'; sx.fillRect(0, 0, W, top);
+      const base = top - 4, scale = (top - 26) / 42;
+      PANELS.forEach((p, pi) => {
+        sx.fillStyle = 'rgba(140,180,255,.04)'; sx.fillRect(p.x0, 0, p.x1 - p.x0, top);
+        sx.strokeStyle = 'rgba(140,180,255,.08)';
+        for (let k = 1; k < 3; k++) { const y = base - k * 14 * scale; sx.beginPath(); sx.moveTo(p.x0, y); sx.lineTo(p.x1, y); sx.stroke(); }
+        const grad = sx.createLinearGradient(0, base - 42 * scale, 0, base);
+        grad.addColorStop(0, 'rgba(244,114,182,.55)'); grad.addColorStop(.5, 'rgba(139,92,246,.35)'); grad.addColorStop(1, 'rgba(34,211,238,.05)');
+        sx.beginPath(); sx.moveTo(p.x0, base);
+        for (let x = p.x0; x < p.x1; x++) sx.lineTo(x, base - smooth[x] * scale);
+        sx.lineTo(p.x1 - 1, base); sx.closePath(); sx.fillStyle = grad; sx.fill();
+        sx.beginPath();
+        for (let x = p.x0; x < p.x1; x++) { const y = base - smooth[x] * scale; x === p.x0 ? sx.moveTo(x, y) : sx.lineTo(x, y); }
+        sx.strokeStyle = 'rgba(34,211,238,.95)'; sx.lineWidth = 1.2; sx.stroke(); sx.lineWidth = 1;
+        let pk = -1, pv = 0; for (let x = p.x0; x < p.x1; x++) if (smooth[x] > pv) { pv = smooth[x]; pk = x; }
+        sx.font = '600 10px "JetBrains Mono", ui-monospace, monospace'; sx.textAlign = 'left';
+        sx.fillStyle = 'rgba(232,238,249,.85)'; sx.fillText(p.name, p.x0 + 6, 13);
+        if (pv > 24 && pk >= 0) {
+          const y = base - pv * scale;
+          sx.strokeStyle = 'rgba(244,114,182,.9)'; sx.beginPath(); sx.moveTo(pk - 4, y - 8); sx.lineTo(pk, y - 3); sx.lineTo(pk + 4, y - 8); sx.stroke();
+          sx.font = '10px "JetBrains Mono", ui-monospace, monospace'; sx.fillStyle = 'rgba(244,114,182,.9)';
+          const txt = p.tag, tw = sx.measureText(txt).width; sx.fillText(txt, Math.min(p.x1 - tw - 4, Math.max(p.x0 + 6, pk - tw / 2)), 25);
+        }
+      });
+      if (now - msgT > 2200) { msgT = now; mi = (mi + 1) % MSG.length; if (info) info.textContent = MSG[mi]; }
+    }
+    const loop = (now) => { if (!running) return; if (now - last > 15) { draw(now); last = now; } requestAnimationFrame(loop); };
+    new ResizeObserver(size).observe(sc);
+    new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting && !running) { running = true; requestAnimationFrame(loop); }
+      else if (!e.isIntersecting) running = false;
+    })).observe(sc);
+  })();
+
   /* SkyKraken radar */
   const cv = document.getElementById('radar'), ctx = cv.getContext('2d');
   let W = 0, H = 0, DPR = 1, running = false, sweep = 0, last = performance.now();
@@ -1195,6 +1321,247 @@ function init() {
   const stars = new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x9fb4d8, size: 0.06, transparent: true, opacity: 0.6, depthWrite: false }));
   scene.add(stars);
 
+  /* =================== Electronic-warfare layer ===================
+     tactical floor + radar sweep, wireframe drone swarm with HUD tracking,
+     RF link pulses, floating code / telemetry, edge data streams, cursor HUD */
+  const hud = document.getElementById('hud'), hctx = hud.getContext('2d');
+  let HW = 0, HH = 0;
+  function sizeHud() { const d = Math.min(devicePixelRatio || 1, 2); HW = innerWidth; HH = innerHeight; hud.width = Math.round(HW * d); hud.height = Math.round(HH * d); hctx.setTransform(d, 0, 0, d, 0, 0); }
+  sizeHud(); addEventListener('resize', sizeHud);
+
+  /* tactical floor with range rings, spokes and rotating radar sweep */
+  const floorU = { uTime: { value: 0 }, uSweep: { value: 0 }, uCenter: { value: new THREE.Vector2() }, uC1: pu.uC1, uC2: pu.uC2 };
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.ShaderMaterial({
+    uniforms: floorU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    vertexShader: /* glsl */`varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: /* glsl */`
+      uniform float uTime, uSweep; uniform vec2 uCenter; uniform vec3 uC1, uC2; varying vec3 vW;
+      float line(float v, float w){ float d = abs(fract(v - .5) - .5) / max(fwidth(v), 1e-4); return 1. - min(d / w, 1.); }
+      void main(){
+        vec2 p = vW.xz;
+        vec2 g = p * .5 + vec2(0., uTime * .3);
+        float grid = max(line(g.x, 1.), line(g.y, 1.)) * .16;
+        vec2 q = p - uCenter; float r = length(q);
+        float inR = step(r, 15.);
+        float rings = line(r * .4, 1.3) * .32 * inR;
+        float ang = atan(q.y, q.x);
+        float spokes = line(ang / 6.2831853 * 16., 1.) * .1 * inR * step(1.5, r);
+        float d = mod(uSweep - ang, 6.2831853);
+        float sweep = (exp(-d * 3.) * .32 + exp(-d * 45.) * .55) * smoothstep(15., 1., r);
+        float blip = 0.;
+        for (int i = 0; i < 5; i++) {
+          float fi = float(i);
+          vec2 c = uCenter + vec2(cos(fi * 2.4 + 1.) , sin(fi * 1.7 + .3)) * (4. + fi * 1.9);
+          float age = mod(uSweep - atan(c.y - uCenter.y, c.x - uCenter.x), 6.2831853);
+          blip += exp(-dot(p - c, p - c) * 6.) * exp(-age * 1.2) * 1.4;
+        }
+        float fade = smoothstep(30., 6., length(vW.xz - vec2(0., 3.)));
+        vec3 col = mix(uC1, uC2, smoothstep(0., 15., r));
+        vec3 outc = col * (grid + rings + spokes + sweep) + vec3(1., .45, .55) * blip;
+        gl_FragColor = vec4(outc * fade * .6, 1.);
+        #include <colorspace_fragment>
+      }`
+  }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -3.3; scene.add(floor);
+
+  /* wireframe quadcopter model */
+  function droneModel() {
+    const pts = [], L = (a, b) => pts.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+    const bx = .09, by = .035, bz = .13;
+    const c = [[-bx, -by, -bz], [bx, -by, -bz], [bx, by, -bz], [-bx, by, -bz], [-bx, -by, bz], [bx, -by, bz], [bx, by, bz], [-bx, by, bz]];
+    [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([i, j]) => L(c[i], c[j]));
+    const tips = [[1, 1], [-1, 1], [1, -1], [-1, -1]].map(([a, b]) => [a * .19, 0, b * .19]);
+    tips.forEach((tp) => {
+      L([0, 0, 0], tp);
+      for (let k = 0; k < 24; k++) { const a1 = k / 24 * 6.2832, a2 = (k + 1) / 24 * 6.2832, r = .12; L([tp[0] + Math.cos(a1) * r, .03, tp[2] + Math.sin(a1) * r], [tp[0] + Math.cos(a2) * r, .03, tp[2] + Math.sin(a2) * r]); }
+    });
+    L([0, -by, bz * .7], [0, -.08, bz * .95]);
+    L([-.07, -by, -.06], [-.09, -.1, -.06]); L([.07, -by, -.06], [.09, -.1, -.06]);
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    return { geo, tips };
+  }
+  const dm = droneModel();
+  const bladeGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-.115, 0, 0), new THREE.Vector3(.115, 0, 0)]);
+  const FREQS = ['2.437 GHz', '5.785 GHz', '2.462 GHz', '5.745 GHz', '1.280 GHz', '2.412 GHz', '5.825 GHz', '915 MHz'];
+  const CYAN = new THREE.Color('#22d3ee'), RED = new THREE.Color('#ff5a6e');
+  const drones = [];
+  const ND = mobile ? 3 : 6;
+  for (let i = 0; i < ND; i++) {
+    const mat = new THREE.LineBasicMaterial({ color: CYAN.clone(), transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false });
+    const g = new THREE.Group(); g.rotation.order = 'YXZ';
+    g.add(new THREE.LineSegments(dm.geo, mat));
+    const blades = dm.tips.map((tp) => { const b = new THREE.Line(bladeGeo, mat); b.position.set(tp[0], .035, tp[2]); g.add(b); return b; });
+    const lights = dm.tips.map((tp, k) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: k < 2 ? 0x4ade80 : 0xff4d5e, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); s.scale.setScalar(.14); s.position.set(tp[0], 0, tp[2]); g.add(s); return s; });
+    g.scale.setScalar(1.6 + R() * .7);
+    scene.add(g);
+    drones.push({ g, mat, blades, lights, id: 'UAV-' + String(i + 1).padStart(2, '0'), f: FREQS[i % FREQS.length],
+      c: [.5 + R() * 5, -0.4 + R() * 2.8, -3.5 - R() * 4.5], A: [2 + R() * 3.5, .5 + R() * .9, 1.2 + R() * 2],
+      w: [.045 + R() * .05, .06 + R() * .07, .035 + R() * .045], ph: [R() * 6.28, R() * 6.28, R() * 6.28],
+      pos: new THREE.Vector3(), ahead: new THREE.Vector3(), s: { x: 0, y: 0, z: 0 }, next: 1 + R() * 3, on: false });
+  }
+  const dronePos = (d, tt, out) => out.set(
+    d.c[0] + d.A[0] * Math.sin(d.w[0] * tt + d.ph[0]),
+    d.c[1] + d.A[1] * Math.sin(d.w[1] * tt + d.ph[1]) + Math.sin(tt * 1.7 + d.ph[0]) * .05,
+    d.c[2] + d.A[2] * Math.sin(d.w[2] * tt + d.ph[2]));
+
+  /* RF pulses (billboarded rings) */
+  const ringGeo = new THREE.RingGeometry(.975, 1, 96);
+  const pulses = [];
+  for (let i = 0; i < 30; i++) {
+    const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    m.visible = false; scene.add(m); pulses.push({ m, age: 0, life: 1, max: 1 });
+  }
+  let pIdx = 0;
+  function emit(pos, color, max, life) { const p = pulses[pIdx++ % pulses.length]; p.m.position.copy(pos); p.m.material.color.set(color); p.age = 0; p.life = life; p.max = max; p.m.visible = true; }
+
+  /* floating code & telemetry */
+  const WORDS = ['async def scan():', 'iq = await sdr.read()', 'psd = np.fft.fft(iq, 4096)', 'if rssi > -70: alert()', 'class ThreatScore(nn.Module):', 'await zmq.send_json(track)',
+    '2.437 GHz', '5.785 GHz', '433.92 MHz', '868.1 MHz', '1.280 GHz', 'RSSI −62 dBm', 'SNR 18.4 dB', 'FHSS · 80 ch', 'OFDM 20 MHz', 'Remote ID', 'λ = c / f',
+    '44.8378° N  0.5792° W', '0x7E 0xA1 0x3C 0x9F', 'model.fit(X, y)', 'const agent = new Agent()', 'git push origin main'];
+  function labelTex(text, color) {
+    const c = document.createElement('canvas'), g = c.getContext('2d'), fs = 40, font = '500 ' + fs + 'px "JetBrains Mono", ui-monospace, monospace';
+    g.font = font; const w = Math.ceil(g.measureText(text).width) + 24;
+    c.width = w; c.height = fs + 24; g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; g.fillText(text, 12, c.height / 2);
+    const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false;
+    return { tx, aspect: w / c.height };
+  }
+  const LCOL = ['#22d3ee', '#a78bfa', '#f472b6', '#7dd3fc'];
+  const labels = WORDS.slice(0, mobile ? 6 : 14).map((w, i) => {
+    const { tx, aspect } = labelTex(w, LCOL[i % LCOL.length]);
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const h = .3; s.scale.set(h * aspect, h, 1);
+    s.position.set((R() - .5) * 22, (R() - .5) * 11, -7 - R() * 8); scene.add(s);
+    return { s, sp: .12 + R() * .18, ph: R() * 6.28, glitch: 0 };
+  });
+
+  /* HUD helpers */
+  const v3 = new THREE.Vector3(), orbW = new THREE.Vector3(), orbS = { x: 0, y: 0, z: 0 };
+  function toScreen(p, out) { v3.copy(p).project(camera); out.x = (v3.x * .5 + .5) * HW; out.y = (-v3.y * .5 + .5) * HH; out.z = v3.z; return out; }
+  function bracket(x, y, h, c) {
+    hctx.beginPath();
+    hctx.moveTo(x - h, y - h + c); hctx.lineTo(x - h, y - h); hctx.lineTo(x - h + c, y - h);
+    hctx.moveTo(x + h - c, y - h); hctx.lineTo(x + h, y - h); hctx.lineTo(x + h, y - h + c);
+    hctx.moveTo(x + h, y + h - c); hctx.lineTo(x + h, y + h); hctx.lineTo(x + h - c, y + h);
+    hctx.moveTo(x - h + c, y + h); hctx.lineTo(x - h, y + h); hctx.lineTo(x - h, y + h - c);
+    hctx.stroke();
+  }
+  const CODE = ['async def scan():', '  iq = await rx()', '  psd = fft(iq)', '  for pk in peaks:', '    score(pk)', 'if rssi > -70:', '  alert(uav)', 'def classify(x):', '  return net(x)', 'await zmq.send()', 'db.insert(track)', 'yield frame', 'np.abs(iq)**2', 'λ = c / f', 'export(evidence)', 'model.eval()', 'agent.run(task)', 'await llm(prompt)'];
+  const hex = () => Math.floor(R() * 256).toString(16).toUpperCase().padStart(2, '0');
+  const TELE = [() => (2400 + R() * 83).toFixed(1) + ' MHz', () => (-40 - Math.round(R() * 50)) + ' dBm', () => '0x' + hex() + ' ' + hex() + ' ' + hex(), () => 'CH ' + String(1 + Math.floor(R() * 80)).padStart(2, '0'),
+    () => 'SNR ' + (8 + R() * 20).toFixed(1), () => 'HOP ' + Math.floor(R() * 999), () => (5725 + R() * 150).toFixed(1) + ' MHz', () => 'AZ ' + String(Math.floor(R() * 360)).padStart(3, '0') + '°'];
+  const LINES = 70, codeL = [], teleL = [];
+  for (let i = 0; i < LINES; i++) { codeL.push(CODE[i % CODE.length]); teleL.push(TELE[(R() * TELE.length) | 0]()); }
+  let lockIdx = -1, lockT = 0, nextLock = 2.5, orbNext = 0.5, streamOff = 0;
+
+  function ewUpdate(dt) {
+    camera.updateMatrixWorld();
+    core.getWorldPosition(orbW);
+    const orbOn = ou.uOpacity.value > .3;
+    floorU.uTime.value = t; floorU.uSweep.value = (t * 1.15) % 6.2831853; floorU.uCenter.value.set(group.position.x, 0);
+
+    /* lock-on scheduling */
+    if (lockIdx < 0) { nextLock -= dt; if (nextLock <= 0) { const vis = drones.map((d, i) => d.on ? i : -1).filter((i) => i >= 0); if (vis.length) { lockIdx = vis[(R() * vis.length) | 0]; lockT = 0; } else nextLock = 1; } }
+    else { lockT += dt; if (lockT > 3.4) { lockIdx = -1; nextLock = 2 + R() * 3; } }
+
+    drones.forEach((d, i) => {
+      dronePos(d, t, d.pos); dronePos(d, t + .6, d.ahead);
+      const vx = d.ahead.x - d.pos.x, vz = d.ahead.z - d.pos.z, vy = d.ahead.y - d.pos.y, spd = Math.hypot(vx, vz);
+      d.g.position.copy(d.pos);
+      d.g.rotation.y = Math.atan2(vx, vz);
+      d.g.rotation.x = Math.min(.35, spd * .5) + vy * .2;
+      d.g.rotation.z = Math.sin(d.w[0] * t + d.ph[0]) * .22;
+      d.blades.forEach((b, k) => { b.rotation.y += dt * (k % 2 ? 38 : -38); });
+      d.lights.forEach((l, k) => { l.material.opacity = (Math.sin(t * 7 + i + k * .5) > .55) ? 1 : .15; });
+      const locked = i === lockIdx;
+      d.mat.color.lerp(locked ? RED : CYAN, Math.min(1, dt * 6));
+      d.next -= dt;
+      if (d.next <= 0) { emit(d.pos, locked ? 0xff5a6e : 0x22d3ee, locked ? 1.6 : 1.0, 1.5); d.next = locked ? .45 : 1.6 + R() * 2.4; }
+    });
+    if (orbOn) { orbNext -= dt; if (orbNext <= 0) { emit(orbW, 0x8b5cf6, 4.2, 2.6); orbNext = 1.7; } }
+    pulses.forEach((p) => {
+      if (!p.m.visible) return;
+      p.age += dt; const k = p.age / p.life;
+      if (k >= 1) { p.m.visible = false; return; }
+      p.m.scale.setScalar(.05 + k * p.max); p.m.quaternion.copy(camera.quaternion);
+      p.m.material.opacity = Math.pow(1 - k, 1.6) * (p.max > 2 ? .45 : .7);
+    });
+    labels.forEach((l) => {
+      l.s.position.y += l.sp * dt;
+      if (l.s.position.y > 6) { l.s.position.y = -6; l.s.position.x = (R() - .5) * 20; }
+      if (l.glitch > 0) l.glitch -= dt; else if (R() < .0015) l.glitch = .18;
+      const edge = Math.min(1, (6 - Math.abs(l.s.position.y)) / 2);
+      l.s.material.opacity = (l.glitch > 0 ? (R() < .5 ? .7 : .05) : (.15 + Math.sin(t * .9 + l.ph) * .06)) * edge;
+    });
+
+    /* ---- 2D HUD ---- */
+    hctx.clearRect(0, 0, HW, HH);
+    hctx.font = '10px "JetBrains Mono", ui-monospace, monospace'; hctx.textAlign = 'left'; hctx.lineWidth = 1;
+    if (orbOn) toScreen(orbW, orbS);
+    drones.forEach((d, i) => {
+      const s = toScreen(d.pos, d.s);
+      d.on = s.z < 1 && s.x > 20 && s.x < HW - 20 && s.y > 70 && s.y < HH - 20;
+      if (!d.on) return;
+      const dist = camera.position.distanceTo(d.pos), locked = i === lockIdx;
+      const base = Math.max(12, 120 / dist);
+      const h = locked ? base * (1.9 - Math.min(lockT, .5) / .5 * .7) : base;
+      const rgb = locked ? '255,90,110' : '34,211,238';
+      hctx.strokeStyle = 'rgba(' + rgb + ',' + (locked ? .95 : .35) + ')';
+      bracket(s.x, s.y, h, h * .38);
+      if (locked) {
+        hctx.save(); hctx.translate(s.x, s.y); hctx.rotate(t * 1.8);
+        hctx.beginPath(); hctx.arc(0, 0, h * 1.35, 0, Math.PI * .5); hctx.moveTo(-h * 1.35, 0); hctx.arc(0, 0, h * 1.35, Math.PI, Math.PI * 1.5); hctx.stroke();
+        hctx.restore();
+        hctx.beginPath();
+        hctx.moveTo(s.x - h * 2, s.y); hctx.lineTo(s.x - h * 1.15, s.y); hctx.moveTo(s.x + h * 1.15, s.y); hctx.lineTo(s.x + h * 2, s.y);
+        hctx.moveTo(s.x, s.y - h * 2); hctx.lineTo(s.x, s.y - h * 1.15); hctx.moveTo(s.x, s.y + h * 1.15); hctx.lineTo(s.x, s.y + h * 2);
+        hctx.stroke();
+        if (orbOn && orbS.z < 1) {
+          hctx.setLineDash([3, 6]); hctx.lineDashOffset = -t * 40;
+          hctx.strokeStyle = 'rgba(255,90,110,.55)';
+          hctx.beginPath(); hctx.moveTo(orbS.x, orbS.y); hctx.lineTo(s.x, s.y); hctx.stroke(); hctx.setLineDash([]);
+        }
+      }
+      const alt = Math.max(5, Math.round((d.pos.y + 3.3) * 38)), km = (d.pos.distanceTo(orbW) * .12).toFixed(2);
+      const lx = s.x + h + 7, ly = s.y - h + 7;
+      hctx.fillStyle = 'rgba(' + rgb + ',' + (locked ? 1 : .45) + ')';
+      hctx.fillText(d.id + ' · ' + d.f, lx, ly);
+      if (locked) { hctx.fillStyle = 'rgba(232,238,249,.85)'; hctx.fillText('ALT ' + alt + ' m · ' + km + ' km', lx, ly + 12); }
+      if (locked) {
+        hctx.fillStyle = 'rgba(255,90,110,' + (.55 + .45 * Math.sin(t * 14)) + ')';
+        hctx.fillText(lockT < .5 ? 'ACQUISITION…' : '■ CIBLE VERROUILLÉE · MENACE ÉLEVÉE', lx, ly + 24);
+      }
+    });
+
+    /* edge data streams (wide screens only) */
+    if (!mobile && HW >= 1360) {
+      streamOff = (streamOff + dt * 20) % 16;
+      if (R() < .08) teleL[(R() * LINES) | 0] = TELE[(R() * TELE.length) | 0]();
+      for (let i = 0; i < LINES; i++) {
+        const y = i * 16 - streamOff; if (y < 60 || y > HH - 10) continue;
+        const a = Math.min(1, (y - 60) / 120, (HH - y) / 120) * .3;
+        hctx.textAlign = 'left'; hctx.fillStyle = 'rgba(34,211,238,' + a + ')'; hctx.fillText(codeL[(i + Math.floor(t * 1.25)) % LINES], 14, y);
+        hctx.textAlign = 'right'; hctx.fillStyle = 'rgba(167,139,250,' + a + ')'; hctx.fillText(teleL[i], HW - 14, y);
+      }
+      hctx.textAlign = 'left';
+    }
+
+    /* cursor HUD (mouse only) */
+    if (mouse.active && mouse.cx !== undefined) {
+      const x = mouse.cx, y = mouse.cy;
+      hctx.strokeStyle = 'rgba(34,211,238,.13)';
+      hctx.beginPath(); hctx.moveTo(0, y); hctx.lineTo(x - 22, y); hctx.moveTo(x + 22, y); hctx.lineTo(HW, y); hctx.moveTo(x, 0); hctx.lineTo(x, y - 22); hctx.moveTo(x, y + 22); hctx.lineTo(x, HH); hctx.stroke();
+      hctx.strokeStyle = 'rgba(34,211,238,.6)';
+      hctx.beginPath(); hctx.arc(x, y, 16, 0, Math.PI * 2); hctx.stroke();
+      for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + t * .8; hctx.beginPath(); hctx.moveTo(x + Math.cos(a) * 16, y + Math.sin(a) * 16); hctx.lineTo(x + Math.cos(a) * 22, y + Math.sin(a) * 22); hctx.stroke(); }
+      const lat = (44.8378 + (.5 - y / HH) * .04).toFixed(4), lon = (0.5792 + (.5 - x / HW) * .06).toFixed(4);
+      const az = String(Math.round(((Math.atan2(x - HW / 2, HH / 2 - y) * 180 / Math.PI) + 360) % 360)).padStart(3, '0');
+      hctx.fillStyle = 'rgba(34,211,238,.75)';
+      hctx.fillText(lat + '° N  ' + lon + '° W', x + 28, y + 26);
+      hctx.fillStyle = 'rgba(232,238,249,.45)';
+      hctx.fillText('AZ ' + az + '° · EL ' + String(Math.round((1 - y / HH) * 45)).padStart(2, '0') + '°', x + 28, y + 38);
+    }
+  }
+
   /* ---------- post-processing (bloom) ---------- */
   let composer = null, bloom = null;
   if (!mobile) {
@@ -1283,6 +1650,7 @@ function init() {
     stars.rotation.y = t * 0.012; stars.rotation.x = Math.sin(t * 0.05) * 0.05;
     if (mouse.active && toLocal(mouse.cx, mouse.cy, vu.uMouse.value)) vu.uMouseOn.value = ease(vu.uMouseOn.value, 1, k);
     else vu.uMouseOn.value = ease(vu.uMouseOn.value, 0, k);
+    ewUpdate(dt);
     if (composer) composer.render(dt); else renderer.render(scene, camera);
   }
 
